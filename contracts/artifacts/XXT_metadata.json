@@ -1,0 +1,53 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			}
+		],
+		"devdoc": {
+			"details": "Store & retrieve value in a variable",
+			"kind": "dev",
+			"methods": {},
+			"title": "Storage",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/XXT.sol": "XXT"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/XXT.sol": {
+			"keccak256": "0xc8201e591968eba8c17c2657bd7c85c8aedbef91f875152854bf5f33f101169b",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://b27fd2c4a2947b786e771620ac2088e9400f021d7503a341c56e48ec25ae98d6",
+				"dweb:/ipfs/QmNiNe5yuugPFzcXMkMgptvEdvFYB8cvePVYCuayeSC5Np"
+			]
+		}
+	},
+	"version": 1
+}

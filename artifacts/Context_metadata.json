@@ -1,0 +1,51 @@
+{
+	"compiler": {
+		"version": "0.8.6+commit.11564f7e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts\\XXT.sol": "Context"
+		},
+		"evmVersion": "berlin",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts\\XXT.sol": {
+			"keccak256": "0x699f174ebee981aef7632644dcc895cfda375b25f8a927f50c6f9fa827f21a94",
+			"license": "GPL-3.0",
+			"urls": [
+				"bzz-raw://886809f3ef1244a16d3d3f5963160160b724ba41ff37768506c99d8a1ba233f1",
+				"dweb:/ipfs/QmTEUqXb8H7ykHhZTqpQ7znhxBHjurRY1vEGeb6gSd2EVf"
+			]
+		}
+	},
+	"version": 1
+}
