@@ -382,12 +382,11 @@ contract BEP20Token is Context, IBEP20, Ownable {
   constructor()  {
     _name = 'XXT';
     _symbol = 'XXT';
-    _decimals = 6;
-    _totalSupply = 99999 * 10 ** uint256(_decimals);
+    _decimals =10;
+    _totalSupply = 0 * 10 ** uint256(_decimals);
     _initRateTable();
     _currentRatePos = 0;
     _feeAddress = 0x7cc70b6e578B05b56af079f1a60e7ddF3140FDb8;
-    emit Receive(address(0),  _totalSupply);
   }
   
   
@@ -399,23 +398,35 @@ contract BEP20Token is Context, IBEP20, Ownable {
   }
   
   function _getTransferValue(uint256 value, uint256 rate) internal pure returns(uint256) {
-    return value.mul(rate).div(1 ether);
+    return rate.mul(value).div(1 ether);
   }
-  
-   receive() external payable {
-       _taxedTransfer(msg.sender,_getTotalTransferValue(msg.value, _currentRatePos, _totalSupply));
-   }
-       
+
+  function _getValue(uint256 transferValue, uint256 rate) internal pure returns (uint256) {
+    return transferValue.mul(1 ether).div(rate);
+  }
+
   function _getTotalTransferValue(uint256 value, uint8 ratePos, uint256 base) internal returns(uint256){
     if(value == 0){
       return 0;
     }else{
+      if(ratePos == 14){
+        _currentRatePos = 14;
+        return 0;
+      }
       uint256 transferValue = _getTransferValue(value, _rateTable[ratePos].rate);
       uint256 currentTransferValue = _rateTable[ratePos].range >= base.add(transferValue) ? transferValue : _rateTable[ratePos].range.sub(base);
-      uint256 valueDelta = value.sub(currentTransferValue.mul(1 ether).div(_rateTable[ratePos].rate));
+      uint256 valueDelta = value.sub(_getValue(currentTransferValue, _rateTable[ratePos].rate));
+      _currentRatePos = ratePos;
       return currentTransferValue + _getTotalTransferValue(valueDelta, _rateTable[ratePos].nextRate, _rateTable[ratePos].range);
     }
   }
+  
+   receive() external payable {
+      uint256 total = _getTotalTransferValue(msg.value, _currentRatePos, _totalSupply);
+       _taxedTransfer(msg.sender, total);
+   }
+       
+  
   
   
   function _initRateTable() internal {

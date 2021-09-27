@@ -39,11 +39,11 @@
 	},
 	"sources": {
 		"contracts\\XXT.sol": {
-			"keccak256": "0x699f174ebee981aef7632644dcc895cfda375b25f8a927f50c6f9fa827f21a94",
+			"keccak256": "0x690c8dce642d3995ca3ade9e43c3868a89802e2ac6f60649eb64b1978ad4de1e",
 			"license": "GPL-3.0",
 			"urls": [
-				"bzz-raw://886809f3ef1244a16d3d3f5963160160b724ba41ff37768506c99d8a1ba233f1",
-				"dweb:/ipfs/QmTEUqXb8H7ykHhZTqpQ7znhxBHjurRY1vEGeb6gSd2EVf"
+				"bzz-raw://436b1ea86ff69da7e6f6b1afc81586add0871acd7661dc21c30b6cc9b0b583ae",
+				"dweb:/ipfs/QmQW9cha4ttRmUmmi8bApgwsaUAf2giH3e1YjLU5CBVxzA"
 			]
 		}
 	},
