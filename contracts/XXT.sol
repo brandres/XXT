@@ -383,44 +383,72 @@ contract BEP20Token is Context, IBEP20, Ownable {
     _name = 'XXT';
     _symbol = 'XXT';
     _decimals =10;
+    //Se puede cambiar el 0 para probar con diferentes rangos 
     _totalSupply = 0 * 10 ** uint256(_decimals);
+    //Inicializar la 
     _initRateTable();
     _currentRatePos = 0;
+    //La direccion donde se envia el 80% del 0.5% que se decuenta antes de enviar los tokens.
     _feeAddress = 0x7cc70b6e578B05b56af079f1a60e7ddF3140FDb8;
   }
   
-  
+  // Transferencia realizando los calculos de las tasas antes de realizar la transferencia. 
+  // Se pasa por parametro la direccion de envio (sender) y el numero de tokens a enviar (Value)
+  // @param {address} sender = direccion a la que se envian los tokens.
+  // @param {uint256} value = numero total de tokens a enviar.
+  // -> 19/20 (0.95) de value se transfieren a la direccion sender.
+  // -> 1/20 (0.05) de value se apartan para cacacular las tasas. 
+  // -> 1/5 (0.2) -> 1/20 (0.05) de value se crean para posteriormente quemarse.
+  // -> 4/5 (0.8) -> 1/20 (0.05) de value se transfieren a la tercera dereccion que obtiene las tasas.
   function _taxedTransfer(address sender, uint256 value) internal {
     _mint(sender, value.mul(19).div(20));
     _mint(address(this), value.div(20).div(5));
     _mint(_feeAddress , value.div(20).mul(4).div(5));
     _burn(address(this), value.div(20).div(5));         
   }
-  
+  // devuelve el numero de tokens a transferir a partir del valor de BNB y el ratio de emision. 
   function _getTransferValue(uint256 value, uint256 rate) internal pure returns(uint256) {
     return rate.mul(value).div(1 ether);
   }
-
+  // Devuelve el valor de BNB a partir del numero de tokens a transferir y el ratio de emision. 
   function _getValue(uint256 transferValue, uint256 rate) internal pure returns (uint256) {
     return transferValue.mul(1 ether).div(rate);
   }
 
+  //Funcion recursiva que calcula el valor total de tokens a enviar. 
+  //Se calculan todos los casos en funcion del rango en el que se encuentre. 
+  //Si el numero inicial de tokens a enviar supera el rango actual, solamente se suman los tokens con el ratio actual hasta llegar al rango.
+  //los tokens restantes se canculan con el ratio de emision del siguiente rango.
+  // por ejemplo:
+  // totalSupply = 99.999  & BNB = 0.01
+  // valor incial de los tokens a 233 XXT por BNB = 2.33, Se pasa por 1.33 el rango de 100.000.
+  // Por lo tanto este 1.33 se tiene que enviar con el ratio de conversion del siguiente rango, es decir 144 XXT por 1 BNB para el rango 100.000 - 1.000.000
+  // Este calculo se realiza recursivamente utilizando las funcioniones _getTransferValue y _getValue para averiguar los tokens a transferir en funcion de los BNB. 
+  // Si el rate es mayor de 14 significa que el supply supera los 136M por lo tanto no se tranfieren XXT
+  // Si el valor de BNB es 0 entonces no se transfieren BNB tampoco.
+  // en caso contrario se calcula el valor de transferencia inicial. En caso de que este valor no supere el rango, se suma al total, 
+  // por otro lado si lo supera, el valor de transferencia sera la resta de la base hasta el rango. 
+  // El delta es el valor de BNB que falta por transformar a XXT
+  // Si este valor es 0 significa que no se ha superado  el rango y por lo tnato  el valor de transferencia y el valor de transferencia incial es el mismo.
+  // Si este valor es mayor que 0 significa que se ha superado el rango y que todavia queda por converir el delta de BNB a XXT.
+  // Asi que, se suma el valor de transferencia, al resultado de ejecutar recursivamente la funcion con el delta, y los ratios del siguiente rango. 
   function _getTotalTransferValue(uint256 value, uint8 ratePos, uint256 base) internal returns(uint256){
-    if(value == 0){
-      return 0;
-    }else{
-      if(ratePos == 14){
+    if(ratePos >= 14){
         _currentRatePos = 14;
         return 0;
+    }else{
+      if(value == 0){
+        return 0;
+      }else{
+        uint256 initialTransfervalue = _getTransferValue(value, _rateTable[ratePos].rate);
+        uint256 transferValue = _rateTable[ratePos].range >= base.add(initialTransfervalue) ? initialTransfervalue : _rateTable[ratePos].range.sub(base);
+        uint256 valueDelta = value.sub(_getValue(transferValue, _rateTable[ratePos].rate));
+        _currentRatePos = ratePos;
+        return transferValue + _getTotalTransferValue(valueDelta, _rateTable[ratePos].nextRate, _rateTable[ratePos].range);
       }
-      uint256 transferValue = _getTransferValue(value, _rateTable[ratePos].rate);
-      uint256 currentTransferValue = _rateTable[ratePos].range >= base.add(transferValue) ? transferValue : _rateTable[ratePos].range.sub(base);
-      uint256 valueDelta = value.sub(_getValue(currentTransferValue, _rateTable[ratePos].rate));
-      _currentRatePos = ratePos;
-      return currentTransferValue + _getTotalTransferValue(valueDelta, _rateTable[ratePos].nextRate, _rateTable[ratePos].range);
     }
   }
-  
+  // funcion fallback del contrato, se ejecuta siempre que se tranfieran BNB al contrato.
    receive() external payable {
       uint256 total = _getTotalTransferValue(msg.value, _currentRatePos, _totalSupply);
        _taxedTransfer(msg.sender, total);
@@ -428,8 +456,9 @@ contract BEP20Token is Context, IBEP20, Ownable {
        
   
   
-  
+  //Incializa la tabla de emision.
   function _initRateTable() internal {
+    // Empezando por el final: XXT[0] = 1, XXT[1] = 1, XXT[i] = XXT[i - 1] + XXT[i - 2];
       _rateTable[0] = RateData(233 * 10 ** uint256(_decimals), 100000 * 10 ** uint256(_decimals), 1);
       _rateTable[1] = RateData(144 * 10 ** uint256(_decimals), 1000000 * 10 ** uint256(_decimals), 2);
       _rateTable[2] = RateData(89 * 10 ** uint256(_decimals), 5000000 * 10 ** uint256(_decimals), 3);
