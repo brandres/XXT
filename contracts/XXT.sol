@@ -406,10 +406,12 @@ contract BEP20Token is Context, IBEP20, Ownable {
     _mint(_feeAddress , value.div(20).mul(4).div(5));
     _burn(address(this), value.div(20).div(5));         
   }
+
   // devuelve el numero de tokens a transferir a partir del valor de BNB y el ratio de emision. 
   function _getTransferValue(uint256 value, uint256 rate) internal pure returns(uint256) {
     return rate.mul(value).div(1 ether);
   }
+
   // Devuelve el valor de BNB a partir del numero de tokens a transferir y el ratio de emision. 
   function _getValue(uint256 transferValue, uint256 rate) internal pure returns (uint256) {
     return transferValue.mul(1 ether).div(rate);
@@ -448,6 +450,7 @@ contract BEP20Token is Context, IBEP20, Ownable {
       }
     }
   }
+  
   // funcion fallback del contrato, se ejecuta siempre que se tranfieran BNB al contrato.
    receive() external payable {
       uint256 total = _getTotalTransferValue(msg.value, _currentRatePos, _totalSupply);
